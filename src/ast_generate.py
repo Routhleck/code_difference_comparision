@@ -1,40 +1,45 @@
-import astpretty
-import clang.cindex
-from clang.cindex import Index  #主要API
-from clang.cindex import Config  #配置
-from clang.cindex import CursorKind  #索引结点的类别
-from clang.cindex import TypeKind    #节点的语义类别
-from file_pre_process import pre_process
+from __future__ import print_function
+
+from pycparser.c_ast import *
+
+from util import rm_emptyline, rm_includeline, rmCommentsInCFile
+
+sys.path.extend(['.', '..'])
+
+from pycparser import c_parser
+
+# 读取c文件程序的内容并去除注释、空行以及头文件，最后生成ast
+# 返回内容为处理后的源代码 和 ast
+def translate_to_c(filename):
+    # 这里展示不用本地编译器的方法
+    # 但读取的文本序列，需去除#include #define 以及注释 这类语句才能生成AST
+    with open(filename, encoding='gbk') as f:
+        txt = f.read()
+    txt = rmCommentsInCFile(txt)  # 去除注释
+    txt = rm_emptyline(txt)  # 去除空行
+    txt = rm_includeline(txt)  # 去除头文件
+    # print(txt)
+    ast = c_parser.CParser().parse(txt)
+    # print(ast)
+    return txt, ast
 
 
-libclangPath = r'C:/Program Files/LLVM/bin/libclang.dll'
-if Config.loaded:
-    print("Config.loaded == True:")
-    #pass
-else:
-    Config.set_library_file(libclangPath)
-    print("install path")
+# 直接将 源代码字符串 转变为 ast
+# 返回内容为处理后的源代码 和 ast
+def translate_to_c_txt(txt):
+    txt = rmCommentsInCFile(txt)  # 去除注释
+    txt = rm_emptyline(txt)  # 去除空行
+    txt = rm_includeline(txt)  # 去除头文件
+    # print(txt)
+    ast = c_parser.CParser().parse(txt)
+    # print(ast)
+    return txt, ast
 
-def preorder_travers_AST(cursor):
-    node_list = []
-    for cur in cursor.get_children():
-        #do something
-        node_list.append(cur.spelling)
-        preorder_travers_AST(cur)
-    return node_list
 
-def get_ast(src_path):
-    pre_process(src_path)
-    index = Index.create()
-    tu = index.parse('temp_file/temp.c')
-    AST_root_node = tu.cursor  # cursor根节点
-    node_list = preorder_travers_AST(AST_root_node)
-    cursor_content = []
-    for token in AST_root_node.get_tokens():
-        # 针对一个节点，调用get_tokens的方法。
-        cursor_content.append(token.spelling)
-    return node_list,cursor_content
-
-src_path = r'F:/1GIT/code_different_comparision/test_c_file/STC8H8K64U_keil_complie/main.c'
-ast_test, token = get_ast(src_path)
-print(token)
+if __name__ == "__main__":
+    src_path = r'F:/1GIT/code_different_comparision/test_c_file/9.c'
+    txt, ast = translate_to_c(src_path)
+    # ast.show()
+    # print(ast)
+    # 使用N-Gram算法，将ast转化为序列
+    
