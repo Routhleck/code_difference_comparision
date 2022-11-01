@@ -1,17 +1,8 @@
 #include "reg51.h"
 #include "intrins.h"
-
 #define FOSC        11059200UL
 #define BRT         (65536 - FOSC / 115200 / 4)
-// test
-
-/*
-    * 串口初始化
-    * 115200 8N1
-*/
-
 sfr     AUXR    =   0x8e;
-
 sfr     P0M1    =   0x93;
 sfr     P0M0    =   0x94;
 sfr     P1M1    =   0x91;
@@ -24,11 +15,8 @@ sfr     P4M1    =   0xb3;
 sfr     P4M0    =   0xb4;
 sfr     P5M1    =   0xc9;
 sfr     P5M0    =   0xca;
-
 bit busy;
 char xdata *ID;
-
-// 延迟函数
 void delay(unsigned int l)
 {
     int i;
@@ -39,10 +27,8 @@ void delay(unsigned int l)
         {
             _nop_();
         }
-        
     }
 }
-
 void UartIsr() interrupt 4
 {
     if (TI)
@@ -55,7 +41,6 @@ void UartIsr() interrupt 4
         RI = 0;
     }
 }
-
 void UartInit()
 {
     SCON = 0x50;
@@ -66,19 +51,16 @@ void UartInit()
     AUXR = 0x40;
     busy = 0;
 }
-
 void UartSend(char dat)
 {
     while (busy);
     busy = 1;
     SBUF = dat;
 }
-
 void main()
 {
 		int i;
     delay(2000);
-    
     P0M0 = 0x00;
     P0M1 = 0x00;
     P1M0 = 0x00;
@@ -91,13 +73,10 @@ void main()
     P4M1 = 0x00;
     P5M0 = 0x00;
     P5M1 = 0x00;
-
     ID = 0x0000;
     UartInit();
     ES = 1;
     EA = 1;
-
-		
     while(i<8192)
     {
       UartSend(ID[i]);
@@ -105,5 +84,3 @@ void main()
     }
 		while(1);
 }
-
-
