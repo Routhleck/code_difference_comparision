@@ -39,7 +39,6 @@ def translate_to_c_txt(txt):
 if __name__ == "__main__":
     src_path = r'F:/1GIT/code_different_comparision/test_c_file/9.c'
     txt, ast = translate_to_c(src_path)
-    # ast.show()
+    ast.show()
     # print(ast)
     # 使用N-Gram算法，将ast转化为序列
-    
