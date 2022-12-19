@@ -31,18 +31,18 @@ def printResult(c1, c2):
     plagrism_threshold_medium = 60
     c1.similarity_threshold = threshold
     c2.similarity_threshold = threshold
-    if (c1.winnowing_similarity(c2) * 100) > plagrism_threshold_high:
+    if (c1.getSimScore() * 100) >= plagrism_threshold_high:
         st.write('\'*{}*\' 的相似度为 **{:.0f}%** 相似度高, 可以认为是抄袭'.format(c1.name, c1.getSimScore() * 100))
-    elif (c1.winnowing_similarity(c2) * 100) > plagrism_threshold_medium:
+    elif (c1.getSimScore() * 100) >= plagrism_threshold_medium:
         st.write('\'*{}*\' 的相似度为 **{:.0f}%** 相似度中等, 可以认为不是抄袭'.format(c1.name, c1.getSimScore() * 100))
     else:
         st.write('\'*{}*\' 的相似度为 **{:.0f}%** 相似度低, 可以认为不是抄袭'.format(c1.name, c1.getSimScore() * 100))
-    if (c2.winnowing_similarity(c1) * 100) > plagrism_threshold_high:
-        st.write('\'*{}*\' 的相似度为 **{:.0f}%** 可以认为是抄袭'.format(c2.name, c2.getSimScore() * 100))
-    elif (c2.winnowing_similarity(c1) * 100) > plagrism_threshold_medium:
-        st.write('\'*{}*\' 的相似度为 **{:.0f}%** 可以认为不是抄袭'.format(c2.name, c2.getSimScore() * 100))
+    if (c2.getSimScore() * 100) >= plagrism_threshold_high:
+        st.write('\'*{}*\' 的相似度为 **{:.0f}%** 相似度高, 可以认为是抄袭'.format(c2.name, c2.getSimScore() * 100))
+    elif (c2.getSimScore() * 100) >= plagrism_threshold_medium:
+        st.write('\'*{}*\' 的相似度为 **{:.0f}%** 相似度中等, 可以认为不是抄袭'.format(c2.name, c2.getSimScore() * 100))
     else:
-        st.write('\'*{}*\' 的相似度为 **{:.0f}%** 可以认为不是抄袭'.format(c2.name, c2.getSimScore() * 100))
+        st.write('\'*{}*\' 的相似度为 **{:.0f}%** 相似度低, 可以认为不是抄袭'.format(c2.name, c2.getSimScore() * 100))
 
     # 展示热力图画布
     p = CodePlot(c1, c2, threshold) 
