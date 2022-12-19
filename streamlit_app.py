@@ -21,7 +21,7 @@ def winnowing(c1, c2):
         with col2:
             win_size = st.slider('滑动窗口大小', 2, 15, 4)
         st.write('Winnowing-相似度: **{:.0f}%**'.format(c1.winnowing_similarity(c2, k_size, win_size) * 100))
-        st.write("请查看这篇论文[this paper](https://theory.stanford.edu/~aiken/publications/papers/sigmod03.pdf)以获得更多信息")
+        st.write("请查看[论文](https://theory.stanford.edu/~aiken/publications/papers/sigmod03.pdf)以获得更多信息")
         blankLine()
 
 # outputs the heatmaps
@@ -105,7 +105,7 @@ def run_app():
 
     else: # home page is printed if no files selected
         a = st.beta_container()
-        logo_file = open('./misc/mls.svg', encoding='utf-8')
+        logo_file = open('./misc/logo.svg', encoding='utf-8')
         logo_data = logo_file.read()
         st.write(renderSvg(logo_data), unsafe_allow_html=True)
         logo_file.close()
