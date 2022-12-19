@@ -6,11 +6,12 @@ from difflib import SequenceMatcher
 from src.winnowing import winnowing_similarity
 import numpy as np
 
-# Hold tokens for a single block within own class instance
+
+# 为一个block创建tokens
 class Block(object):
-    def __init__(self, tokens, similarity = 0, compared = False):
+    def __init__(self, tokens, similarity=0, compared=False):
         self._similarity = similarity
-        #self._compared = compared
+        # self._compared = compared
         self._tokens = tokens
 
     @property
@@ -25,38 +26,25 @@ class Block(object):
     def tokens(self):
         return self._tokens
 
-
-    # OPERATOR OVERLOADS:
-    #---------------------------------------------------------------------------
+    # 运算符重载
     def __len__(self):
         return len(self.tokens)
 
     def __str__(self):
         return (''.join(str(t[0]) for t in self.tokens))
 
+    # 对象方法:
 
-    # OBJECTMETHODS:
-    #---------------------------------------------------------------------------
-
-    # Compare blocks using tokens
+    # 使用token比较两个block
     def compare(self, other):
-        # Get similarity comparing two blocks
         if (isinstance(other, Block)):
+            # 使用DIFFLIB计算相似度
+            return SequenceMatcher(None, str(self), str(other)).ratio()
 
-            # OLD IMPLEMENTATION USING OWN LEVENSHTEIN FUNCTION:
-            #-------------------------------------------------------
-            #ldis = lvs_distance(str(self),str(other))
-            #max_t_len = max(len(str(self)), len(str(other)))
-            #s_score = (1 - ldis/max_t_len) #Return similarity score
-
-            # NEW IMPLEMENTATION USING DIFFLIB (much faster with same result!):
-            return SequenceMatcher(None,str(self),str(other)).ratio()
-
-    # Compare blocks using raw strings
+    # 使用原始字符串比较两个block
     def compare_str(self, other):
         if (isinstance(other, Block)):
-            return SequenceMatcher(None,self.clnstr(),other.clnstr()).ratio()
-
+            return SequenceMatcher(None, self.clnstr(), other.clnstr()).ratio()
 
     def clnstr(self):
         return (''.join(str(t[3].lower()) for t in self.tokens))
@@ -67,9 +55,10 @@ class Block(object):
     def max_col(self):
         return max(self.tokens, key=itemgetter(2))[2]
 
-# Represent a files source code as tokens, also implements similarity check
+
+# 将源代码用tokens表示，实现相似性比较
 class Code:
-    def __init__(self, text, name="", similarity_threshold = 0.9):
+    def __init__(self, text, name="", similarity_threshold=0.9):
         self._blocks = []
         self._max_row = 0
         self._max_col = 0
@@ -98,58 +87,58 @@ class Code:
     def similarity_threshold(self, t):
         self._similarity_threshold = t
 
-    # Generate tokens for file
+    # 为源代码文件生成tokens
     def __tokenize(self, filename):
         file = open(filename, "r")
         text = file.read()
         file.close()
         self.__tokenizeFromText(text)
-        
 
     def __tokenizeFromText(self, text):
-        lexer = PythonLexer() # Using pygments Python Lexer
+        lexer = PythonLexer()  # 使用lexer做词法分析, 判断属于哪种编程语言
         tokens = lexer.get_tokens(text)
-        tokens = list(tokens) # Convert to tokens to list object
+        tokens = list(tokens)  # 转化为list
         result = []
-        prev_c = '' # Remember previous category
-        row = 0     # Remember position of row
-        col = 0     # Remember position of column
+        prev_c = ''  # 前一个的类别
+        row = 0
+        col = 0
 
-        # Simplify tokens using categories and add additional coordinates
+        # 使用category简化tokens
         for token in tokens:
             c = get_category(token)
-            
-            if (c is not None):
-                # Linefeed detected -> do not append to result but change position
-                if c == 'L':
-                    row = row + 1 #Increment line position
-                    col = 0 # Set back column after linefeed
 
-                # New block detected
+            if (c is not None):
+                # 换行检测,更新坐标但不加入result
+                if c == 'L':
+                    row = row + 1
+                    col = 0
+
+                # 检测到新的block, prev_c为\n且不为缩进
                 elif prev_c == 'L' and c != 'I' and result:
                     self.blocks.append(Block(result))
                     result = []
 
+                # 不为空行
                 if c != 'L':
-                    # Differentiate function calls from variables
+                    # 区分函数调用和变量
                     if prev_c == 'V' and token[1] == '(':
                         result[-1] = 'A', result[-1][1], result[-1][2], result[-1][3]
 
-                    result.append((c, row, col, token[1])) # Append result for single token
-                    col += 1 #Increment column position
+                    result.append((c, row, col, token[1]))
+                    col += 1
                     if col > self._max_col:
                         self._max_col = col
             prev_c = c
-        self._max_row = row # Set max row for Tokens instance
-        
-        # Append last block if result not empty
+        self._max_row = row  # 依照代码的行数更新最大行数
+
+        # 结果不为空则追加最后一个block
         if result:
             self.blocks.append(Block(result))
 
-    # Return numpy array representation of similarity
+    # 返回相似度的numpy数组表示
     def get_sim_array(self):
-        data = np.zeros((self._max_row, self._max_col), dtype=float) #Initialize empty array
-        
+        data = np.zeros((self._max_row, self._max_col), dtype=float)
+
         for block in self.blocks:
             sim = block.similarity
             for t in block.tokens:
@@ -157,34 +146,32 @@ class Code:
 
         return data
 
-    # Return numpy array representation of clearstrings
+    # 返回清晰字符串的numpy数组表示
     def get_clnstr_array(self):
-        data = np.zeros((self._max_row, self._max_col), dtype=object) #Initialize empty array
-        
+        data = np.zeros((self._max_row, self._max_col), dtype=object)
+
         for block in self.blocks:
             for t in block.tokens:
                 data[t[1]][t[2]] = t[3]
 
         return data
 
-    # Return numpy array representation of categories
+    # 返回category表示的numpy数组
     def get_ctg_array(self):
-        data = np.zeros((self._max_row, self._max_col), dtype=int) #Initialize empty array
-        
+        data = np.zeros((self._max_row, self._max_col), dtype=int)  # Initialize empty array
+
         for block in self.blocks:
             for t in block.tokens:
                 data[t[1]][t[2]] = ord(t[0])
 
         return data
 
-
-    # Set back all block similarities to zero
+    # 重置所有block的相似度
     def resetSimilarity(self):
         for block in self.blocks:
             block.similarity = 0
 
-
-    # Find exact matches using stringcompare and annotate
+    # 使用string compare和annotate方法查找能匹配的block
     def __pre_process(self, other):
         other_blocks = other.blocks
         for block_a in self.blocks:
@@ -197,34 +184,33 @@ class Code:
 
     def __process_similarity(self, other):
         for block_a in self.blocks:
-            # Only was not compared already
             if block_a.similarity == 0:
-                best_score = 0 # Remember the best matching score
+                best_score = 0  # 记录最佳匹配分数
                 for block_b in other.blocks:
                     if len(block_a) > self._lvs_blocksize:
                         score = block_a.compare(block_b)
                     else:
                         score = block_a.compare_str(block_b)
 
-                    # Set best score if found a better match
+                    # 找到最大的匹配分数
                     if score >= best_score:
                         best_score = score
 
-                        # Set the best similarity score for code b as well
+                        # 也为代码b设置最佳匹配数
                         if block_b.similarity < best_score:
                             block_b.similarity = best_score
 
                 block_a.similarity = best_score
 
-    # Calculate similarity scores for each block (primary calculation method)
+    # 计算每个块的相似度分数（使用levensthein计算方法）
     def calculate_similarity(self, other):
-        self.resetSimilarity()              # Reset block similarity scores of this code
-        other.resetSimilarity()             # Reset block similarity scores of other code
-        self.__pre_process(other)           # Do preprocessing step finding exact string matches
-        self.__process_similarity(other)    # Compare remaining blocks using levensthein distance on token categories
+        self.resetSimilarity()
+        other.resetSimilarity()
+        self.__pre_process(other)
+        self.__process_similarity(other)
         other.__process_similarity(self)
 
-    # Calculate total result -> similarity score
+    # 返回计算的相似度,为超过相似度阈值的block数除以总block数
     def getSimScore(self):
         total_len = 0
         len_plagiat = 0
@@ -232,19 +218,18 @@ class Code:
             total_len += len(block)
             if (block.similarity >= self._similarity_threshold):
                 len_plagiat += len(block) * block.similarity
-        return len_plagiat/total_len
+        return len_plagiat / total_len
 
-
-    # Return winnowing similarity (a second calculation method for similarity score)
-    def winnowing_similarity(self, other, size_k = 5, window_size = 4):
+    # 计算每个块的相似度分数（使用使用winnowing方法）
+    def winnowing_similarity(self, other, size_k=5, window_size=4):
         score = winnowing_similarity(str(self), str(other), size_k, window_size)
         return score
 
-    # Return length of code
+    # 返回代码的行数
     def __len__(self):
         # Define length as row count of code
         return self._max_row
 
-    # Return all tokens of code as string
+    # 返回代码的字符串表示
     def __str__(self):
         return "".join(str(x) for x in self.blocks)

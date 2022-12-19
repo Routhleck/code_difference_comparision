@@ -2,37 +2,32 @@ from pygments import token
 from re import search
 from operator import itemgetter
 
-
-
-# Define single char representation and color of token categories
+# 使用pygements对代码进行读取以获取其token
+# 用单个字符表示token类别以及其颜色
 categories = {
-    'Call':         ['A', 'rgb(80, 138, 44)'],
-    'Builtin':      ['B', 'rgb(212, 212, 102)'],
-    'Comparison':   ['C', 'rgb(176, 176, 176)'],
-    'FunctionDef':  ['D', 'rgb(4, 163, 199)'],
-    'Function':     ['F', 'rgb(199, 199, 72)'],
-    'Indent':       ['I', 'rgb(237, 237, 237)'],
-    'Keyword':      ['K', 'rgb(161, 53, 219)'],
-    'Linefeed':     ['L', 'rgb(255, 255, 255)'],
-    'Namespace':    ['M', 'rgb(232, 232, 209)'],
-    'Number':       ['N', 'rgb(192, 237, 145)'],
-    'Operator':     ['O', 'rgb(212, 212, 212)'],
-    'Punctuation':  ['P', 'rgb(214, 216, 216)'],
-    'Pseudo':       ['Q', 'rgb(14, 3, 163)'],
-    'String':       ['S', 'rgb(194, 126, 0)'],
-    'Variable':     ['V', 'rgb(184, 184, 176)'],
-    'WordOp':       ['W', 'rgb(8, 170, 207)'],
-    'NamespaceKw':  ['X', 'rgb(161, 53, 219)']
-    # Categories left for assignment: EGHJQRTUYZ
+    'Call': ['A', 'rgb(80, 138, 44)'],
+    'Builtin': ['B', 'rgb(212, 212, 102)'],
+    'Comparison': ['C', 'rgb(176, 176, 176)'],
+    'FunctionDef': ['D', 'rgb(4, 163, 199)'],
+    'Function': ['F', 'rgb(199, 199, 72)'],
+    'Indent': ['I', 'rgb(237, 237, 237)'],
+    'Keyword': ['K', 'rgb(161, 53, 219)'],
+    'Linefeed': ['L', 'rgb(255, 255, 255)'],
+    'Namespace': ['M', 'rgb(232, 232, 209)'],
+    'Number': ['N', 'rgb(192, 237, 145)'],
+    'Operator': ['O', 'rgb(212, 212, 212)'],
+    'Punctuation': ['P', 'rgb(214, 216, 216)'],
+    'Pseudo': ['Q', 'rgb(14, 3, 163)'],
+    'String': ['S', 'rgb(194, 126, 0)'],
+    'Variable': ['V', 'rgb(184, 184, 176)'],
+    'WordOp': ['W', 'rgb(8, 170, 207)'],
+    'NamespaceKw': ['X', 'rgb(161, 53, 219)']
 }
 
 
-
-# Categorize the tokens
+# 给token分类
 def get_category(t):
-    category = '' # represent category as single uppercase char
-
-    #print(t) # Print actual pygments token
+    category = ''  # 用单个大写字母代表类别
 
     if t[0] == token.Keyword.Namespace:
         category = categories['NamespaceKw'][0]
@@ -48,7 +43,7 @@ def get_category(t):
         category = categories['Builtin'][0]
     elif t[0] in token.Literal.Number:
         category = categories['Number'][0]
-    elif t[0] in token.Literal.String and t[1] not in ['\'', '\"']  and t[0] not in token.Literal.String.Doc:
+    elif t[0] in token.Literal.String and t[1] not in ['\'', '\"'] and t[0] not in token.Literal.String.Doc:
         category = categories['String'][0]
     elif t[0] == token.Keyword and t[1] == 'def':
         category = categories['FunctionDef'][0]
@@ -67,19 +62,17 @@ def get_category(t):
     elif t[0] == token.Text and t[1] == '\n':
         category = categories['Linefeed'][0]
     else:
-        category = None # Ignore Comments and other tokens
+        category = None  # 若为注释或其他未分配的token，则忽略
 
     return category
 
 
-# Create a cmap for the categories defined
+# 为定义的类别创建cmap, 用于在plot中显示颜色
 def get_cmap():
-
     clist = []
 
     prev_c = [0, "rgb(255, 255, 255)"]
 
-    # Build cmap from categories
     for key in categories:
         clist.append(prev_c)
         clist.append([ord(categories[key][0]), prev_c[1]])
@@ -87,10 +80,10 @@ def get_cmap():
 
     # Normalize keys of colour representation
     # Needed for plotly
-    max_ = max(clist,key=itemgetter(0))[0]
-    min_ = min(clist,key=itemgetter(0))[0]
+    max_ = max(clist, key=itemgetter(0))[0]
+    min_ = min(clist, key=itemgetter(0))[0]
     converted = []
-   
+
     for element in clist:
         converted.append([(element[0] - min_) / (max_ - min_), element[1]])
 

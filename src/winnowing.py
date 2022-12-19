@@ -1,14 +1,8 @@
-""" Implemented using the paper https://theory.stanford.edu/~aiken/publications/papers/sigmod03.pdf 
-Schleimer, Saul, Daniel S. Wilkerson, and Alex Aiken. 
-"Winnowing: local algorithms for document fingerprinting." 
-Proceedings of the 2003 ACM SIGMOD international conference on Management of data. 2003.
 
-Example text: adorunrunrunadorunrun
-"""
 
 from hashlib import sha1
 
-# Define the kind of hash function to use
+# 定义要使用的哈希函数的种类
 def hash_fun(text):
     hs = sha1(text.encode("utf-8"))
     hs = hs.hexdigest()[-4:]
@@ -16,14 +10,13 @@ def hash_fun(text):
     return hs
 
 
-# Get kgrams from a given string
-# For example: abcde,3 -> abc bcd cde
+# 将字符串转化为kgrams
 def kgrams(text, n):
   text = list(text)
   return zip(*[text[i:] for i in range(n)])
 
 
-# Get hashvalues from kgrams with 0-base positional information
+# 获取每个grams的哈希值
 def do_hashing(kgrams):
     hashlist = []
     for i,kg in enumerate(list(kgrams)):
@@ -33,26 +26,26 @@ def do_hashing(kgrams):
     return hashlist
 
 
-# Apply sliding window to list of hashes
+# 将滑动窗口应用于哈希列表
 def sl_window(hashes, n):
     return zip(*[hashes[i:] for i in range(n)])
 
 
-# Get the minimum value of sliding windows
+# 获取滑动窗口的最小值
 def get_min(windows):
     result = []
     prev_min = ()
     for w in windows:
-        # Find minimum hash and take rightmost occurence
+        # 找到最小散列并取最右边的出现
         min_h = min(w, key=lambda x: (x[0], -x[1])) 
 
-        # Only use hash if differs from previous min
+        # 仅在与前一个最小值不同时才使用散列
         if min_h != prev_min:
             result.append(min_h)
         prev_min = min_h
     return result
 
-# Apply winnowing algorithm on text
+# winnowing算法
 def winnowing(text, size_k, window_size):
     hashes = (do_hashing(kgrams(text,size_k)))
     return set(get_min(sl_window(hashes, window_size)))
@@ -63,7 +56,7 @@ def intersection(lst1, lst2):
     lst3 = [value for value in lst1 if value in temp] 
     return len(lst3) 
 
-# Get similarity using winnowing algorithm + jaccard distance
+# 使用winnowing算法和jaccard距离得到相似度
 def winnowing_similarity(text_a, text_b, size_k = 5, window_size = 4):
     # Get fingerprints using winnowing
     w1 = winnowing(text_a, size_k, window_size)
