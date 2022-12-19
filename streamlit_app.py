@@ -21,16 +21,23 @@ def winnowing(c1, c2):
         with col2:
             win_size = st.slider('滑动窗口大小', 2, 15, 4)
         st.write('Winnowing-相似度: **{:.0f}%**'.format(c1.winnowing_similarity(c2, k_size, win_size) * 100))
-        st.write("请查看[论文](https://theory.stanford.edu/~aiken/publications/papers/sigmod03.pdf)以获得更多信息")
+        # st.write("请查看[论文](https://theory.stanford.edu/~aiken/publications/papers/sigmod03.pdf)以获得更多信息")
         blankLine()
 
 # 展示代码热力图
 def printResult(c1, c2):
     threshold = st.sidebar.slider('选择相似度阈值', 1, 100, 90) / 100
+    plagrism_threshold = 90
     c1.similarity_threshold = threshold
     c2.similarity_threshold = threshold
-    st.write('**{:.0f}%** 的 \'*{}*\' 被认为是抄袭'.format(c1.getSimScore() * 100, c1.name))
-    st.write('**{:.0f}%** 的 \'*{}*\' 被认为是抄袭'.format(c2.getSimScore() * 100, c2.name))
+    if (c1.winnowing_similarity(c2) * 100) > plagrism_threshold:
+        st.write('\'*{}*\' 的相似度为 **{:.0f}%** 可以认为是抄袭'.format(c1.name, c1.getSimScore() * 100))
+    else:
+        st.write('\'*{}*\' 的相似度为 **{:.0f}%** 可以认为不是抄袭'.format(c1.name, c1.getSimScore() * 100))
+    if (c2.winnowing_similarity(c1) * 100) > plagrism_threshold:
+        st.write('\'*{}*\' 的相似度为 **{:.0f}%** 可以认为是抄袭'.format(c2.name, c2.getSimScore() * 100))
+    else:
+        st.write('\'*{}*\' 的相似度为 **{:.0f}%** 可以认为不是抄袭'.format(c2.name, c2.getSimScore() * 100))
 
     # 展示热力图画布
     p = CodePlot(c1, c2, threshold) 
