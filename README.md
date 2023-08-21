@@ -78,17 +78,29 @@ use the graph_objects of plotly module Display the properties of each block. And
 
 ## User Manual
 
-1.	Open https://routhleck-code-different-comparision-streamlit-app-1s0mx2.streamlit.app/ to enter the home page of our software and you will see the page like this.   
+1.	Open https://routhleck-code-different-comparision-streamlit-app-1s0mx2.streamlit.app/ to enter the home page of our software and you will see the page like this.
+
+![1](1.png)
 
 2.	Then you can choose two files that you need to compare on these two buttons
 
+![2](2.png)
+
 3.	Finally, when the two chosen files gotten successfully, you will see the page like this
+
+![3](3.png)
 
 The marked red area means these column or code module are considered have high similarity ，and when you put your mouse pointer on the marked area,the area will show you the detail information like this.
 
+![4](4.png)
+
 Besides,you can change the KGrams and the size of Sliding window on this panel
 
+![5](5.png)
+
 you also can change the view mode here,the "High similarity blocks " can show you the similarity by token like this.
+
+![6](6.png)
 
 ## References:
 ```
